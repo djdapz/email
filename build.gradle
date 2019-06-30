@@ -1,0 +1,53 @@
+buildscript {
+    ext.kotlin_version = '1.3.40'
+    ext.spring_boot_version = '2.0.1.RELEASE'
+    ext.jackson_version = '2.9.7'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // Required for Kotlin integration
+        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
+        // See https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:$spring_boot_version"
+    }
+}
+
+
+apply plugin: 'kotlin' // Required for Kotlin integration
+apply plugin: "kotlin-spring" // https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.springframework.boot:spring-boot-starter-mail:$spring_boot_version"
+    implementation "org.springframework.boot:spring-boot-starter-web:$spring_boot_version"
+
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
+    implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
+
+    testCompile "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
+    testCompile "org.assertj:assertj-core:3.11.1"
+    testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
+    testCompile "com.github.javafaker:javafaker:0.18"
+    testCompile "io.rest-assured:rest-assured:3.0.5"
+
+    testCompile(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: "$spring_boot_version") {
+        exclude(module: 'commons-logging')
+    }
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}

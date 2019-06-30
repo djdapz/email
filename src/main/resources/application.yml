@@ -1,0 +1,14 @@
+server:
+  port: ${PORT}
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${LUKE_EMAIL_ADDRESS}
+    password: ${LUKE_EMAIL_PASSWORD}
+    properties:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
