@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  email-db:
+    image: postgres:10
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_PASSWORD: pwd
+      POSTGRES_USER: user
+    ports:
+      - "5434:5432"

@@ -4,3 +4,5 @@ applications:
   memory: 1024M
   instances: 1
   stack: cflinuxfs3
+  service:
+    - email-db

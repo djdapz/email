@@ -1,0 +1,1 @@
+TRUNCATE TABLE sent_emails;

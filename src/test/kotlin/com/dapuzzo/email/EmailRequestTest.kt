@@ -64,27 +64,6 @@ class EmailRequestTest {
             )
         }
     }
-
-    companion object {
-        private val faker = Faker()
-        fun randomEmailRequest(
-            email: String = randomEmail()
-        ): EmailRequest = EmailRequest(
-            name = faker.esports().event(),
-            from = email,
-            to = listOf(randomEmail(), randomEmail()),
-            message = faker.harryPotter().quote()
-        )
-
-        private fun String.removeNonEmailChars() = this.replace(" ", "")
-            .replace(",", "")
-            .replace(")", "")
-            .replace("(", "")
-            .replace("'", "")
-
-        private fun randomEmail() =
-            "${faker.harryPotter().character().removeNonEmailChars()}@${faker.company().name().removeNonEmailChars()}.com"
-    }
 }
 
 inline fun <reified U : Throwable> assertThrows(message: String?, function: () -> Any) {
@@ -98,6 +77,24 @@ inline fun <reified U : Throwable> assertThrows(message: String?, function: () -
             throw e
         }
     }
-
-
 }
+
+private val faker = Faker()
+
+fun randomEmail() =
+    "${faker.harryPotter().character().removeNonEmailChars()}@${faker.company().name().removeNonEmailChars()}.com"
+
+private fun String.removeNonEmailChars() = this.replace(" ", "")
+    .replace(",", "")
+    .replace(")", "")
+    .replace("(", "")
+    .replace("'", "")
+
+fun randomEmailRequest(
+    email: String = randomEmail()
+): EmailRequest = EmailRequest(
+    name = faker.esports().event(),
+    from = email,
+    to = listOf(randomEmail(), randomEmail()),
+    message = faker.harryPotter().quote()
+)
