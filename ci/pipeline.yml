@@ -1,0 +1,264 @@
+---
+resources:
+
+  - name: repo
+    type: git
+    source:
+      uri: ((git-repo))
+      private_key: ((github-private-key))
+
+  - name: openjdk
+    type: docker-image
+    source:
+      repository: openjdk
+      tag: 8
+
+  - name: alpine
+    type: docker-image
+    source:
+      repository: alpine
+      tag: latest
+
+  - name: postgres
+    type: docker-image
+    source:
+      repository: postgres
+
+  - name: openjdk-node-cf
+    type: docker-image
+    source:
+      repository: djdapz/openjdk-node-cf
+
+  - name: dcind
+    type: docker-image
+    source:
+      repository: amidos/dcind
+
+  - name: acceptance
+    type: cf
+    source:
+      api: https://api.run.pivotal.io
+      username: ((PCF_USERNAME))
+      password: ((PCF_PASSWORD))
+      organization: dapuzzo
+      space: development
+
+  - name: production
+    type: cf
+    source:
+      api: https://api.run.pivotal.io
+      username: ((PCF_USERNAME))
+      password: ((PCF_PASSWORD))
+      organization: dapuzzo
+      space: production
+
+  - name: s3
+    type: s3
+    source:
+      region_name: us-west-2
+      bucket: ((AWS_BUCKET_NAME))
+      regexp: email-(.*).jar
+      access_key_id: ((AWS_ACCESS_KEY_ID))
+      secret_access_key: ((AWS_SECRET_ACCESS_KEY))
+
+  - name: every-hour
+    type: time
+    source:
+      interval: 1h
+
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: git@github.com:djdapz/email.git
+      branch: version
+      file: version
+      private_key: ((github-private-key))
+
+jobs:
+  - name: stop-dev-environment
+    public: true
+    plan:
+      - get: openjdk-node-cf
+        params: {save: true}
+      - get: every-hour
+        trigger: true
+      - task: stop-frontend
+        privileged: true
+        image: openjdk-node-cf
+        config:
+          platform: linux
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                set -e
+                cf login -a https://api.run.pivotal.io -u ${PCF_USERNAME} -p ${PCF_PASSWORD} -s development -o dapuzzo
+                cf stop email-service-dev
+        params:
+          PCF_USERNAME: ((PCF_USERNAME))
+          PCF_PASSWORD: ((PCF_PASSWORD))
+
+  - name: run-tests
+    public: true
+    plan:
+      - get: version
+      - get: repo
+        trigger: true
+      - get: openjdk
+        params: {save: true}
+      - get: postgres
+        params: {save: true}
+      - get: dcind
+        params: {save: true}
+      - task: run-tests
+        privileged: true
+        image: dcind
+        config:
+          platform: linux
+          inputs:
+            - name: repo
+            - name: postgres
+            - name: openjdk
+          caches:
+            - path: gradle
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                set -e
+                source /docker-lib.sh
+
+                start_docker
+
+                docker load -i postgres/image
+                docker tag "$(cat postgres/image-id)" "$(cat postgres/repository):$(cat postgres/tag)"
+
+                docker load -i openjdk/image
+                docker tag "$(cat openjdk/image-id)" "$(cat openjdk/repository):$(cat openjdk/tag)"
+
+
+                docker images
+
+                docker-compose -f repo/ci/docker-compose.tests.yml run unit-integration-tests
+
+                docker-compose -f repo/ci/docker-compose.tests.yml down
+                docker volume rm $(docker volume ls -q)
+
+      - put: version
+        params: {bump: patch}
+
+  - name: build-and-upload
+    public: true
+    plan:
+      - get: version
+        trigger: true
+        passed: ["run-tests"]
+      - get: repo
+        passed: ["run-tests"]
+      - get: openjdk
+        params: {save: true}
+      - task: build-and-upload
+        privileged: true
+        image: openjdk
+        config:
+          platform: linux
+          inputs:
+            - name: repo
+            - name: version
+          outputs:
+            - name: s3
+          caches:
+            - path: gradle
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                #!/bin/bash
+                set -ex
+                ./repo/ci/tasks/cache_gradle.sh
+
+                export BUILD_VERSION=`cat version/number`
+                cd repo
+
+                ./gradlew clean assemble -Pversion=$BUILD_VERSION
+                pwd
+                cp build/libs/email-${BUILD_VERSION}.jar ../s3/email-${BUILD_VERSION}.jar
+
+      - put: s3
+        params:
+          file: s3/email-*.jar
+
+  - name: deploy-acceptance
+    plan:
+      - get: repo
+        passed: [ "build-and-upload"]
+      - get: alpine
+        params: {save: true}
+      - get: s3
+        passed:  ["build-and-upload"]
+        trigger: true
+      - task: deploy
+        privileged: true
+        image: alpine
+        config:
+          platform: linux
+          inputs:
+            - name: repo
+            - name: s3
+          outputs:
+            - name: deploy
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                #!/bin/bash
+                set -ex
+
+                cp s3/email-*.jar  ./deploy/email.jar
+                cp ./repo/ci/manifests/dev-manifest.yml ./deploy/manifest.yml
+      - put: acceptance
+        params:
+          inputs:
+            - name: deploy
+          path: deploy/email.jar
+          manifest: deploy/manifest.yml
+
+  - name: deploy-production-backend
+    plan:
+      - get: repo
+        passed: [ "deploy-acceptance"]
+      - get: alpine
+        params: {save: true}
+      - get: s3
+        passed:  ["deploy-acceptance"]
+      - task: deploy
+        privileged: true
+        image: alpine
+        config:
+          platform: linux
+          inputs:
+            - name: repo
+            - name: s3
+          outputs:
+            - name: deploy
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                #!/bin/bash
+                set -ex
+
+                cp s3/email-*.jar  ./deploy/email.jar
+                cp ./repo/ci/manifests/prod-manifest.yml ./deploy/manifest.yml
+      - put: production
+        params:
+          inputs:
+            - name: deploy
+          path: deploy/email.jar
+          manifest: deploy/manifest.yml

@@ -1,0 +1,6 @@
+---
+applications:
+- name: luke-dapuzzo-api
+  memory: 1024M
+  instances: 1
+  stack: cflinuxfs3

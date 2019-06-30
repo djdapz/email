@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  luke-db:
+    image: postgres
+    environment:
+      POSTGRES_DB: luke-test
+      POSTGRES_PASSWORD: lukepwd
+      POSTGRES_USER: lukeuser
+      PGDATA: /database
+
+  unit-integration-tests:
+    image: openjdk:8
+    privileged: true
+    links: [luke-db]
+    depends_on: [luke-db]
+    command: "./repo/ci/tasks/run-tests.sh"
+    volumes:
+      - ../:/repo
+      - ../../gradle:/gradle
