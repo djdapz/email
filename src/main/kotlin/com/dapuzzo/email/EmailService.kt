@@ -20,6 +20,9 @@ class EmailService(
             })
         }
             .onSuccess { emailRepository.saveSuccess(emailRequest) }
-            .onFailure { emailRepository.saveFailure(emailRequest) }
+            .onFailure { e ->
+                e.printStackTrace()
+                emailRepository.saveFailure(emailRequest)
+            }
 
 }
