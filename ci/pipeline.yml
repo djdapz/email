@@ -55,7 +55,7 @@ resources:
   - name: s3
     type: s3
     source:
-      region_name: us-west-2
+      region_name: us-east-1
       bucket: ((AWS_BUCKET_NAME))
       regexp: email-(.*).jar
       access_key_id: ((AWS_ACCESS_KEY_ID))
@@ -142,9 +142,14 @@ jobs:
 
                 docker images
 
-                docker-compose -f repo/ci/docker-compose.tests.yml run unit-integration-tests
+                cd repo
 
-                docker-compose -f repo/ci/docker-compose.tests.yml down
+                docker-compose up -d
+
+                ./gradlew clean test
+
+                docker-compose down
+
                 docker volume rm $(docker volume ls -q)
 
       - put: version

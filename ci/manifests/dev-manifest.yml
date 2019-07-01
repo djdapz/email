@@ -1,6 +1,6 @@
 ---
 applications:
-- name: luke-dapuzzo-api-dev
+- name: djdapz-email-dev
   memory: 1024M
   instances: 1
   stack: cflinuxfs3
