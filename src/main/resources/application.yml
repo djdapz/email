@@ -4,13 +4,9 @@ spring:
     port: 587
     username: ${LUKE_EMAIL_ADDRESS}
     password: ${LUKE_EMAIL_PASSWORD}
-    properties:
-      smtp:
-        auth: true
-        starttls:
-          enable: true
   datasource:
     driver-class-name: org.postgresql.Driver
   flyway:
     locations: classpath:db/migrations
     clean-on-validation-error: false
+
