@@ -142,14 +142,9 @@ jobs:
 
                 docker images
 
-                cd repo
+                docker-compose -f repo/ci/docker-compose.tests.yml run unit-integration-tests
 
-                docker-compose up -d
-
-                ./gradlew clean test
-
-                docker-compose down
-
+                docker-compose -f repo/ci/docker-compose.tests.yml down
                 docker volume rm $(docker volume ls -q)
 
       - put: version

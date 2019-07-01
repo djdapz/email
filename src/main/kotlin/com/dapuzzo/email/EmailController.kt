@@ -13,8 +13,8 @@ class EmailController(
 
     @PostMapping("/email")
     fun sendEmail(@RequestBody emailRequest: EmailRequest): ResponseEntity<*> {
-        emailService.sendEmail(emailRequest)
-
+        val result = emailService.sendEmail(emailRequest)
+        if (result.isFailure) return ResponseEntity.status(500).body("Kaboom")
         return ResponseEntity.ok("Great Success")
     }
 }

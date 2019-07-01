@@ -1,6 +1,9 @@
 package com.dapuzzo.email
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
 import org.assertj.core.api.Assertions.assertThat
@@ -17,6 +20,7 @@ import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit4.SpringRunner
+import java.lang.RuntimeException
 import java.math.BigInteger
 
 
@@ -51,6 +55,12 @@ class EmailTest {
         assertThat(sentMessage.subject).isEqualTo("LUKE D'APUZZO Website Contact")
     }
 
+    @Test
+    fun shouldReturnA500WhenEmailIsNotSent() {
+        whenever(mailSender.send(any<SimpleMailMessage>())).doThrow(RuntimeException("Kaboom"))
+        sendEmail(expectedCode = 500)
+    }
+
 
     @Test
     fun `should save email sent in db`() {
@@ -68,7 +78,7 @@ class EmailTest {
     }
 
     fun howManyEmailsFrom(dude: String): Int =
-        jdbcTemplate.queryForObject("SELECT count(*) FROM sent_emails WHERE request ->> 'from' ='$dude'") {it, _ ->
+        jdbcTemplate.queryForObject("SELECT count(*) FROM sent_emails WHERE request ->> 'from' ='$dude'") { it, _ ->
             it.getInt("count")
         }
 
@@ -76,7 +86,8 @@ class EmailTest {
         name: String = "joe",
         message: String = "hey bro",
         from: String = "email@gmail.com",
-        to: List<String> = listOf("luke@luke.luke")
+        to: List<String> = listOf("luke@luke.luke"),
+        expectedCode: Int = 200
     ) {
         val toList = to.joinToString(", ") { "\"$it\"" }
         given()
@@ -97,7 +108,7 @@ class EmailTest {
             .post("http://localhost:$port/email")
             .then()
             .log().all()
-            .statusCode(200)
+            .statusCode(expectedCode)
     }
 
 

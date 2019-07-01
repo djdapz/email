@@ -10,7 +10,7 @@ class EmailService(
     val emailSender: JavaMailSender,
     val emailRepository: EmailRepository
 ) {
-    fun sendEmail(emailRequest: EmailRequest) {
+    fun sendEmail(emailRequest: EmailRequest) =
 
         emailSender.runCatching {
             send(SimpleMailMessage().apply {
@@ -21,6 +21,5 @@ class EmailService(
         }
             .onSuccess { emailRepository.saveSuccess(emailRequest) }
             .onFailure { emailRepository.saveFailure(emailRequest) }
-    }
 
 }
