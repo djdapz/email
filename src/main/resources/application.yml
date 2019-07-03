@@ -10,3 +10,12 @@ spring:
     locations: classpath:db/migrations
     clean-on-validation-error: false
 
+
+dapuzzo:
+  mail:
+    from: ${FROM_EMAIL_ADDRESS}
+    subject: Luke D'Apuzzo Website Contact
+    mailgun:
+      password: ${MAILGUN_PASSWORD}
+      username:  ${MAILGUN_USERNAME}
+      url:  ${MAILGUN_URL}

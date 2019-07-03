@@ -1,4 +1,4 @@
-package com.dapuzzo.email
+package com.dapuzzo.email.app
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping

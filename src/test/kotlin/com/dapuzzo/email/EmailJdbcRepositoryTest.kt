@@ -1,5 +1,7 @@
 package com.dapuzzo.email
 
+import com.dapuzzo.email.app.EmailRequest
+import com.dapuzzo.email.jdbc.EmailJdbcRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -97,7 +99,7 @@ internal class EmailJdbcRepositoryTest {
 
     @Test
     fun `should save the datetime when it's created`() {
-        val before = LocalDateTime.now()
+        val before = LocalDateTime.now().minusMinutes(1)
 
         val request = randomEmailRequest()
         emailJdbcRepository.saveFailure(request)
@@ -107,7 +109,7 @@ internal class EmailJdbcRepositoryTest {
             jdbcTemplate.queryForObject("""SELECT * FROM sent_emails where request ->> 'from' ='${request.from}'""")
             { rs, _ -> rs.getTimestamp("date").toLocalDateTime() }
 
-        val after = LocalDateTime.now()
+        val after = LocalDateTime.now().plusMinutes(1)
 
         assertThat(savedTime).isAfter(before)
         assertThat(savedTime).isBefore(after)

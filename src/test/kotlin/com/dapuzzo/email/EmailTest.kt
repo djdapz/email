@@ -7,20 +7,24 @@ import com.nhaarman.mockitokotlin2.whenever
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Captor
+import org.mockito.MockitoAnnotations
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.web.server.LocalServerPort
+import org.springframework.http.HttpEntity
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.mail.SimpleMailMessage
-import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit4.SpringRunner
-import java.lang.RuntimeException
+import org.springframework.util.MultiValueMap
+import org.springframework.web.client.RestTemplate
 import java.math.BigInteger
 
 
@@ -34,30 +38,38 @@ class EmailTest {
     lateinit var port: BigInteger
 
     @MockBean
-    lateinit var mailSender: JavaMailSender
+    lateinit var restTemplate: RestTemplate
 
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
 
+    @Captor
+    lateinit var captor: ArgumentCaptor<HttpEntity<MultiValueMap<String, String>>>
+
+    @Before
+    fun init() {
+        MockitoAnnotations.initMocks(this)
+    }
+
     @Test
     fun shouldUsePassedEmailToDetermineLocation() {
-        val argument = ArgumentCaptor.forClass(SimpleMailMessage::class.java)
         val to = listOf("luke@luke.luke", "devon@devon.devon")
 
         sendEmail(to = to)
 
 
-        verify(mailSender).send(argument.capture())
+        verify(restTemplate).postForEntity(any<String>(), captor.capture(), any<Class<Any>>())
 
-        val sentMessage = argument.value
+        val sentPeople: List<String> = captor.value.body["to"]!!
+        val sentSubject: String = captor.value.body["subject"]!![0]
 
-        assertThat(sentMessage.to).isEqualTo(to.toTypedArray())
-        assertThat(sentMessage.subject).isEqualTo("LUKE D'APUZZO Website Contact")
+        assertThat(sentPeople).containsExactlyElementsOf(to)
+        assertThat(sentSubject).isEqualTo("woohoo stuff")
     }
 
     @Test
     fun shouldReturnA500WhenEmailIsNotSent() {
-        whenever(mailSender.send(any<SimpleMailMessage>())).doThrow(RuntimeException("Kaboom"))
+        whenever(restTemplate.postForEntity(anyString(), any(), any<Class<Any>>())).doThrow(RuntimeException("Kaboom"))
         sendEmail(expectedCode = 500)
     }
 

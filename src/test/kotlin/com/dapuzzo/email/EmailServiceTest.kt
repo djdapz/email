@@ -1,9 +1,10 @@
 package com.dapuzzo.email
 
+import com.dapuzzo.email.app.EmailRepository
+import com.dapuzzo.email.app.EmailSender
+import com.dapuzzo.email.app.EmailService
 import com.nhaarman.mockitokotlin2.*
 import org.junit.Test
-import org.springframework.mail.SimpleMailMessage
-import org.springframework.mail.javamail.JavaMailSender
 import java.lang.RuntimeException
 
 /**
@@ -11,14 +12,23 @@ import java.lang.RuntimeException
  */
 class EmailServiceTest {
 
-    private val javaMailSender = mock<JavaMailSender>()
+    private val emailClient = mock<EmailSender>()
     private val emailRepository = mock<EmailRepository>()
-    private val subject = EmailService(javaMailSender, emailRepository)
+    private val subject = EmailService(emailClient, emailRepository)
+
+    @Test
+    fun `should use sendgrid`(){
+        val emailRequest = randomEmailRequest()
+        subject.sendEmail(emailRequest)
+
+        verify(emailClient).send(emailRequest)
+    }
+
 
     @Test
     fun `should call JavaMailSender once `() {
         subject.sendEmail(randomEmailRequest())
-        verify(javaMailSender, times(1)).send(any<SimpleMailMessage>())
+        verify(emailClient, times(1)).send(any())
     }
 
     @Test
@@ -31,7 +41,7 @@ class EmailServiceTest {
     @Test
     fun `should save the email request with failure if the email request doesnt work`() {
         val request = randomEmailRequest()
-        whenever(javaMailSender.send(any<SimpleMailMessage>())).doThrow(RuntimeException("muahahaha"))
+        whenever(emailClient.send(any())).doThrow(RuntimeException("muahahaha"))
 
         subject.sendEmail(request)
 

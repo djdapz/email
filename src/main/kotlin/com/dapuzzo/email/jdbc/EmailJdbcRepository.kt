@@ -1,5 +1,7 @@
-package com.dapuzzo.email
+package com.dapuzzo.email.jdbc
 
+import com.dapuzzo.email.app.EmailRepository
+import com.dapuzzo.email.app.EmailRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
@@ -9,7 +11,8 @@ import org.postgresql.util.PGobject
 
 
 @Component
-class EmailJdbcRepository(jdbcTemplate: JdbcTemplate, val objectMapper: ObjectMapper) : EmailRepository {
+class EmailJdbcRepository(jdbcTemplate: JdbcTemplate, val objectMapper: ObjectMapper) :
+    EmailRepository {
     val jdbcTemplate = NamedParameterJdbcTemplate(jdbcTemplate)
 
     override fun saveSuccess(request: EmailRequest): Unit = save(request, true)

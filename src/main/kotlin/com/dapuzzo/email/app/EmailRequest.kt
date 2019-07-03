@@ -1,4 +1,4 @@
-package com.dapuzzo.email
+package com.dapuzzo.email.app
 
 val REGEX = Regex("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})\$")
 

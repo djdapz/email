@@ -1,5 +1,7 @@
 package com.dapuzzo.email
 
+import com.dapuzzo.email.app.EmailRequest
+import com.dapuzzo.email.app.isValidEmail
 import com.github.javafaker.Faker
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -91,10 +93,11 @@ private fun String.removeNonEmailChars() = this.replace(" ", "")
     .replace("'", "")
 
 fun randomEmailRequest(
-    email: String = randomEmail()
+    email: String = randomEmail(),
+    to: List<String> = listOf(randomEmail(), randomEmail())
 ): EmailRequest = EmailRequest(
     name = faker.esports().event(),
     from = email,
-    to = listOf(randomEmail(), randomEmail()),
+    to = to,
     message = faker.harryPotter().quote()
 )

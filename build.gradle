@@ -26,13 +26,14 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "org.springframework.boot:spring-boot-starter-mail:$spring_boot_version"
     implementation "org.springframework.boot:spring-boot-starter-jdbc:$spring_boot_version"
     implementation "org.springframework.boot:spring-boot-starter-web:$spring_boot_version"
 
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
+
+    implementation 'com.sendgrid:sendgrid-java:4.4.1'
 
     implementation "org.postgresql:postgresql:42.2.6"
     implementation "org.flywaydb:flyway-core:5.2.4"

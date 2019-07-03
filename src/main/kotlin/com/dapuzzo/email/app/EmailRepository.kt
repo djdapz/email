@@ -1,4 +1,4 @@
-package com.dapuzzo.email
+package com.dapuzzo.email.app
 
 interface EmailRepository {
     fun saveSuccess(request: EmailRequest)
