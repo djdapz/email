@@ -14,7 +14,7 @@ spring:
 dapuzzo:
   mail:
     from: ${FROM_EMAIL_ADDRESS}
-    subject: Luke D'Apuzzo Website Contact
+    subject: ${EMAIL_SUBJECT:Luke D'Apuzzo Website Contact}
     mailgun:
       password: ${MAILGUN_PASSWORD}
       username:  ${MAILGUN_USERNAME}
