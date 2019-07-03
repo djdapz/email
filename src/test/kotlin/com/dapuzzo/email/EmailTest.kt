@@ -68,6 +68,11 @@ class EmailTest {
     }
 
     @Test
+    fun shouldReturn400WhenInvalidEmailSent() {
+        sendEmail(to = listOf("luke@luke.luke", "devon@devon"), expectedCode = 400)
+    }
+
+    @Test
     fun shouldReturnA500WhenEmailIsNotSent() {
         whenever(restTemplate.postForEntity(anyString(), any(), any<Class<Any>>())).doThrow(RuntimeException("Kaboom"))
         sendEmail(expectedCode = 500)
