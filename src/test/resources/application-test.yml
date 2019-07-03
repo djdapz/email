@@ -12,7 +12,6 @@ spring:
     clean-on-validation-error: true
 
 dapuzzo:
-  email-distribution-list: devon@dapuzzo.com,djdapz@aol.com
   mail:
     from: some@email.email
     subject: woohoo stuff

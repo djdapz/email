@@ -1,8 +1,7 @@
 dapuzzo:
-  email-distribution-list: devon@dapuzzo.com,djdapz@aol.com
   mail:
     from: ${FROM_EMAIL_ADDRESS}
-    subject: [LOCAL] Luke D'Apuzzo Website Contact
+    subject: LOCAL Luke D'Apuzzo Website Contact
 
 server:
   port: 8082
