@@ -95,7 +95,7 @@ jobs:
               - |
                 set -e
                 cf login -a https://api.run.pivotal.io -u ${PCF_USERNAME} -p ${PCF_PASSWORD} -s development -o dapuzzo
-                cf stop email-service-dev
+                cf stop djdapz-email-dev
         params:
           PCF_USERNAME: ((PCF_USERNAME))
           PCF_PASSWORD: ((PCF_PASSWORD))

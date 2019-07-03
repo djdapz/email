@@ -14,23 +14,17 @@ class EmailController(
     val emailService: EmailService
 ) {
 
-
     @PostMapping("/email")
-    fun sendEmail(@RequestBody request: EmailRestRequest): ResponseEntity<*> {
-
-        return request
-            .runCatching {
-                toEmailRequest()
-            }.fold(
-                { sendEmail(it) },
-                { ResponseEntity.status(400).body("BAD BODY") }
-            )
-    }
-
-    private fun sendEmail(it: EmailRequest): ResponseEntity<String> =
-        emailService.sendEmail(it)
-            .fold(
-                { ResponseEntity.ok("Great Success") },
-                { ResponseEntity.status(500).body("Kaboom") }
-            )
+    fun sendEmail(@RequestBody request: EmailRestRequest): ResponseEntity<String> = request
+        .runCatching {
+            toEmailRequest()
+        }.fold(
+            {
+                emailService.sendEmail(it).fold(
+                    { ResponseEntity.ok("Great Success") },
+                    { ResponseEntity.status(500).body("Kaboom") }
+                )
+            },
+            { ResponseEntity.status(400).body("BAD BODY") }
+        )
 }
