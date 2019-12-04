@@ -1,4 +1,5 @@
 dapuzzo:
+  allowed-origins: http://localhost:8080,http://localhost:3000
   mail:
     from: ${FROM_EMAIL_ADDRESS}
     subject: LOCAL Luke D'Apuzzo Website Contact

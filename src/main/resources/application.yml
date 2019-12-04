@@ -12,6 +12,7 @@ spring:
 
 
 dapuzzo:
+  allowed-origins: ${ALLOWED_ORIGINS}
   mail:
     from: ${FROM_EMAIL_ADDRESS}
     subject: ${EMAIL_SUBJECT:Luke D'Apuzzo Website Contact}
